@@ -5,6 +5,7 @@
   , "dotenv"
   , "effect"
   , "either"
+  , "exceptions"
   , "foldable-traversable"
   , "httpure"
   , "node-process"
