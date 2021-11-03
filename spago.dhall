@@ -1,6 +1,16 @@
 { name = "ghcv-api"
 , dependencies =
-  [ "arrays", "console", "effect", "httpure", "prelude", "psci-support" ]
+  [ "aff"
+  , "arrays"
+  , "console"
+  , "dotenv"
+  , "effect"
+  , "httpure"
+  , "maybe"
+  , "node-process"
+  , "prelude"
+  , "psci-support"
+  ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]
 }
