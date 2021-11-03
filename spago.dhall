@@ -1,7 +1,6 @@
 { name = "ghcv-api"
 , dependencies =
   [ "aff"
-  , "arrays"
   , "console"
   , "dotenv"
   , "effect"
