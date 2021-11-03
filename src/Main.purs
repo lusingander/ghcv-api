@@ -1,7 +1,9 @@
 module Main where
 
 import Prelude
-import Data.Maybe (fromMaybe)
+import Data.Bitraversable (bitraverse)
+import Data.Either (Either)
+import Data.Either (note) as Either
 import Dotenv (loadFile) as Dotenv
 import Effect (Effect)
 import Effect.Aff (Aff, launchAff_)
@@ -14,22 +16,30 @@ main :: Effect Unit
 main =
   launchAff_ do
     config <- loadConfig
-    liftEffect $ HTTPure.serve 8080 router $ Console.log "Server now up on http://localhost:8080"
+    liftEffect $ bitraverse startFail startServer config
+
+startServer :: Config -> HTTPure.ServerM
+startServer _ = HTTPure.serve 8080 router $ Console.log "Server now up on http://localhost:8080"
+
+startFail :: String -> Effect Unit
+startFail e = Console.log $ "Failed to start: " <> e
 
 type Config
   = { token :: String }
 
-loadConfig :: Aff Config
+loadConfig :: Aff (Either String Config)
 loadConfig = do
   _ <- Dotenv.loadFile
   liftEffect loadConfig'
 
-loadConfig' :: Effect Config
+loadConfig' :: Effect (Either String Config)
 loadConfig' = do
   maybeToken <- lookupEnv configKeyToken
   let
-    token = fromMaybe "invalid" maybeToken
-  pure { token: token }
+    config = do
+      token <- Either.note "token is not set" maybeToken
+      pure { token: token }
+  pure config
 
 configKeyToken :: String
 configKeyToken = "GITHUB_API_TOKEN"
