@@ -1,58 +1,56 @@
-module Gh (request) where
+module Gh (post) where
 
 import Prelude
+import Affjax (Error, Response, printError)
+import Affjax as AX
+import Affjax.RequestBody as RequestBody
+import Affjax.RequestHeader (RequestHeader(..)) as RequestHeader
+import Affjax.ResponseFormat as ResponseFormat
 import Data.Either (Either(..))
-import Effect (Effect)
-import Effect.Console as Console
-import Effect.Exception (Error)
+import Data.HTTP.Method (Method(..))
+import Data.Maybe (Maybe(..))
+import Effect.Aff (Aff)
+import Foreign (MultipleErrors)
+import Simple.JSON (class ReadForeign, readJSON)
 
-type Opt
-  = { callback :: Callback
-    , rightf :: RightF
-    , leftf :: LeftF
-    , body :: Body
-    , token :: Token
+type ErrorReponse
+  = { message :: String
+    , documentation_url :: String
     }
 
-type Callback
-  = Either Error Response -> Effect Unit
+type DataResponse a
+  = { data :: a }
 
-type Response
-  = { statusCode :: Int, body :: String }
+type ViewerResponse
+  = { viewer :: { login :: String } }
 
-type RightF
-  = Int -> String -> Either Error Response
+decodeErrorResponse :: String -> Either MultipleErrors ErrorReponse
+decodeErrorResponse = readJSON
 
-type LeftF
-  = Error -> Either Error Response
+decodeDataResponse :: forall a. ReadForeign a => String -> Either MultipleErrors (DataResponse a)
+decodeDataResponse = readJSON
 
-type Body
-  = String
+post :: String -> Aff (Either String String)
+post token = do
+  result <- AX.request $ buildRequest token
+  pure $ parseResult result
 
-type Token
-  = String
+parseResult :: Either Error (Response String) -> Either String String
+parseResult = case _ of
+  Left e -> Left $ "http error: " <> printError e
+  Right res -> case decodeDataResponse res.body of
+    Left e -> Left $ "json decode error: " <> show e
+    Right (result :: DataResponse ViewerResponse) -> Right $ result.data.viewer.login
 
-foreign import requestImpl :: Opt -> Effect Unit
-
-request :: String -> Effect Unit
-request token = requestImpl $ opt token """{"query": "query { viewer { login } }"}"""
-
-opt :: Token -> Body -> Opt
-opt token body =
-  { callback: callback
-  , rightf: rightf
-  , leftf: leftf
-  , body: body
-  , token: token
-  }
-
-callback :: Callback
-callback = case _ of
-  Left e -> Console.logShow e
-  Right res -> Console.logShow res.body
-
-rightf :: RightF
-rightf code body = Right { statusCode: code, body: body }
-
-leftf :: LeftF
-leftf = Left
+buildRequest :: String -> AX.Request String
+buildRequest token =
+  AX.defaultRequest
+    { url = "https://api.github.com/graphql"
+    , method = Left POST
+    , headers =
+      [ RequestHeader.RequestHeader "Authorization" $ "bearer " <> token
+      ]
+    -- []
+    , content = Just $ RequestBody.string """{"query": "query { viewer { login } }"}"""
+    , responseFormat = ResponseFormat.string
+    }
