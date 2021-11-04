@@ -21,6 +21,9 @@ import Effect.Aff (Aff)
 import Simple.JSON (class ReadForeign, readJSON)
 import Simple.JSON as JSON
 
+endpointUrl :: String
+endpointUrl = "https://api.github.com/graphql"
+
 type Query
   = String
 
@@ -52,19 +55,22 @@ parseResult = case _ of
   Left e -> Left $ "http error: " <> printError e
   Right res -> case readJSON res.body of
     Left e -> Left $ "json decode error: " <> show e
-    Right (result :: (GhResponse a)) -> Right $ result
+    Right result -> Right result
 
 buildRequest :: Query -> Token -> AX.Request String
 buildRequest query token =
   AX.defaultRequest
-    { url = "https://api.github.com/graphql"
+    { url = endpointUrl
     , method = Left POST
     , headers =
-      [ RequestHeader.RequestHeader "Authorization" $ "bearer " <> token
+      [ authorizationHeader token
       ]
     , content = Just $ RequestBody.string $ buildQueryJson query
     , responseFormat = ResponseFormat.string
     }
+
+authorizationHeader :: Token -> RequestHeader.RequestHeader
+authorizationHeader token = RequestHeader.RequestHeader "Authorization" $ "bearer " <> token
 
 buildQueryJson :: Query -> String
 buildQueryJson query = """ {"query": " """ <> query <> """ "} """
