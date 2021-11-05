@@ -23,16 +23,16 @@ type UserResponse
     }
 
 user :: String -> Gh.Token -> Aff (Either String (Gh.GhResponse UserResponse))
-user userId = Gh.post $ query userId
+user userId = Gh.post $ buildQuery userId
 
-query :: String -> String
-query userId = String.replace (Pattern "__userId__") (Replacement userId) baseQueryOneLine
+buildQuery :: String -> String
+buildQuery userId = String.replace (Pattern "__userId__") (Replacement userId) queryOneLine
 
-baseQueryOneLine :: String
-baseQueryOneLine = String.replaceAll (Pattern "\n") (Replacement " ") baseQuery
+queryOneLine :: String
+queryOneLine = String.replaceAll (Pattern "\n") (Replacement " ") query
 
-baseQuery :: String
-baseQuery =
+query :: String
+query =
   """
 query { 
     user(login: \"__userId__\") {

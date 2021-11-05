@@ -11,7 +11,7 @@ type ViewerResponse
   = { viewer :: { login :: String } }
 
 viewer :: Gh.Token -> Aff (Either String (Gh.GhResponse ViewerResponse))
-viewer = Gh.post query
+viewer = Gh.post buildQuery
 
-query :: String
-query = "query { viewer { login } }"
+buildQuery :: String
+buildQuery = "query { viewer { login } }"
