@@ -7,7 +7,7 @@ import Prelude
 import Data.Either (Either)
 import Data.Maybe (Maybe)
 import Data.String (Pattern(..), Replacement(..))
-import Data.String (replace) as String
+import Data.String (replace, replaceAll) as String
 import Effect.Aff (Aff)
 import Gh as Gh
 
@@ -26,7 +26,21 @@ user :: String -> Gh.Token -> Aff (Either String (Gh.GhResponse UserResponse))
 user userId = Gh.post $ query userId
 
 query :: String -> String
-query userId = String.replace (Pattern "__userId__") (Replacement userId) baseQuery
+query userId = String.replace (Pattern "__userId__") (Replacement userId) baseQueryOneLine
+
+baseQueryOneLine :: String
+baseQueryOneLine = String.replaceAll (Pattern "\n") (Replacement " ") baseQuery
 
 baseQuery :: String
-baseQuery = """query { user(login: \"__userId__\") { login name location company websiteUrl avatarUrl } }"""
+baseQuery =
+  """
+query { 
+    user(login: \"__userId__\") {
+        login
+        name
+        location
+        company
+        websiteUrl
+        avatarUrl
+    }
+}"""
