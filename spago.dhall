@@ -15,6 +15,7 @@
   , "prelude"
   , "psci-support"
   , "simple-json"
+  , "strings"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]
