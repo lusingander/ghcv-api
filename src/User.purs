@@ -4,7 +4,6 @@ module User
   ) where
 
 import Prelude
-import Data.Either (Either)
 import Data.Maybe (Maybe)
 import Data.String (Pattern(..), Replacement(..))
 import Data.String (replace, replaceAll) as String
@@ -22,7 +21,7 @@ type UserResponse
         }
     }
 
-user :: String -> Gh.Token -> Aff (Either String (Gh.GhResponse UserResponse))
+user :: String -> Gh.Token -> Aff (Gh.GhResult UserResponse)
 user userId = Gh.post $ buildQuery userId
 
 buildQuery :: String -> String

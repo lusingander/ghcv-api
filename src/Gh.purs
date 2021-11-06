@@ -1,5 +1,6 @@
 module Gh
   ( post
+  , GhResult
   , GhResponse(..)
   , RequestErrorResponse
   , GraphErrorResponse
@@ -32,6 +33,9 @@ type Query
 type Token
   = String
 
+type GhResult a
+  = Either String (GhResponse a)
+
 data GhResponse a
   = Ok (DataResponse a)
   | GraphError GraphErrorResponse
@@ -57,12 +61,12 @@ type GraphErrorDetailResponse
 type DataResponse a
   = { data :: a }
 
-post :: forall a. ReadForeign a => Query -> Token -> Aff (Either String (GhResponse a))
+post :: forall a. ReadForeign a => Query -> Token -> Aff (GhResult a)
 post query token = do
   result <- AX.request $ buildRequest query token
   pure $ parseResult result
 
-parseResult :: forall a. ReadForeign a => Either Error (Response String) -> Either String (GhResponse a)
+parseResult :: forall a. ReadForeign a => Either Error (Response String) -> GhResult a
 parseResult = case _ of
   Left e -> Left $ "http error: " <> printError e
   Right res -> case readJSON res.body of

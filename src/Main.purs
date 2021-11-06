@@ -9,7 +9,7 @@ import Effect (Effect)
 import Effect.Aff (Aff, launchAff_)
 import Effect.Class (liftEffect)
 import Effect.Console as Console
-import Gh (GhResponse(..)) as Gh
+import Gh (GhResponse(..), GhResult) as Gh
 import HTTPure as HTTPure
 import Node.Process (lookupEnv)
 import User (user) as User
@@ -58,10 +58,10 @@ handleUser config userId = do
   result <- User.user userId config.token
   handleGhResult result (\u -> HTTPure.ok u.user.avatarUrl)
 
-handleGhResult :: forall a. Either String (Gh.GhResponse a) -> (a -> HTTPure.ResponseM) -> HTTPure.ResponseM
+handleGhResult :: forall a. Gh.GhResult a -> (a -> HTTPure.ResponseM) -> HTTPure.ResponseM
 handleGhResult result handler = case result of
-  Left e -> HTTPure.internalServerError e
   Right r -> handleGhResponse r handler
+  Left e -> HTTPure.internalServerError e
 
 handleGhResponse :: forall a. Gh.GhResponse a -> (a -> HTTPure.ResponseM) -> HTTPure.ResponseM
 handleGhResponse response handler = case response of
