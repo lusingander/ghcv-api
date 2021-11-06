@@ -63,5 +63,6 @@ handleUser config userId = do
           Console.log
             $ case r of
                 Gh.Ok d -> show d
-                Gh.Error e -> show e
+                Gh.GraphError e -> show e
+                Gh.RequestError e -> show e
   HTTPure.ok userId

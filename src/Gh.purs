@@ -1,7 +1,9 @@
 module Gh
   ( post
   , GhResponse(..)
-  , ErrorResponse
+  , RequestErrorResponse
+  , GraphErrorResponse
+  , GraphErrorDetailResponse
   , DataResponse
   , Query
   , Token
@@ -32,14 +34,24 @@ type Token
 
 data GhResponse a
   = Ok (DataResponse a)
-  | Error ErrorResponse
+  | GraphError GraphErrorResponse
+  | RequestError RequestErrorResponse
 
 instance readGhResponse :: ReadForeign a => ReadForeign (GhResponse a) where
-  readImpl f = Ok <$> JSON.readImpl f <|> Error <$> JSON.readImpl f
+  readImpl f = Ok <$> JSON.readImpl f <|> GraphError <$> JSON.readImpl f <|> RequestError <$> JSON.readImpl f
 
-type ErrorResponse
+type RequestErrorResponse
   = { message :: String
     , documentation_url :: String
+    }
+
+type GraphErrorResponse
+  = { errors :: Array GraphErrorDetailResponse
+    }
+
+type GraphErrorDetailResponse
+  = { type :: String
+    , message :: String
     }
 
 type DataResponse a
