@@ -9,7 +9,7 @@ import Effect (Effect)
 import Effect.Aff (Aff, launchAff_)
 import Effect.Class (liftEffect)
 import Effect.Console as Console
-import Gh (GhResponse(..), GhResult) as Gh
+import Gh (GhResponse(..), GhResult, StatusCode) as Gh
 import HTTPure as HTTPure
 import Node.Process (lookupEnv)
 import User (user) as User
@@ -63,8 +63,8 @@ handleGhResult result handler = case result of
   Right r -> handleGhResponse r handler
   Left e -> HTTPure.internalServerError e
 
-handleGhResponse :: forall a. Gh.GhResponse a -> (a -> HTTPure.ResponseM) -> HTTPure.ResponseM
-handleGhResponse response handler = case response of
+handleGhResponse :: forall a. { statusCode :: Gh.StatusCode, response :: Gh.GhResponse a } -> (a -> HTTPure.ResponseM) -> HTTPure.ResponseM
+handleGhResponse { statusCode: statusCode, response: response } handler = case response of
   Gh.Ok res -> handler res.data
   Gh.GraphError res -> HTTPure.badRequest $ "graph error: " <> show res
-  Gh.RequestError res -> HTTPure.badRequest $ "request error: " <> show res
+  Gh.RequestError res -> HTTPure.response statusCode $ "request error: " <> show res

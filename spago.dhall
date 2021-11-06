@@ -11,6 +11,7 @@
   , "http-methods"
   , "httpure"
   , "maybe"
+  , "newtype"
   , "node-process"
   , "prelude"
   , "psci-support"

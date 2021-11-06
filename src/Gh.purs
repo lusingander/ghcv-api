@@ -8,6 +8,7 @@ module Gh
   , DataResponse
   , Query
   , Token
+  , StatusCode
   ) where
 
 import Prelude
@@ -20,6 +21,7 @@ import Control.Alt ((<|>))
 import Data.Either (Either(..))
 import Data.HTTP.Method (Method(..))
 import Data.Maybe (Maybe(..))
+import Data.Newtype (unwrap)
 import Effect.Aff (Aff)
 import Simple.JSON (class ReadForeign, readJSON)
 import Simple.JSON as JSON
@@ -33,8 +35,11 @@ type Query
 type Token
   = String
 
+type StatusCode
+  = Int
+
 type GhResult a
-  = Either String (GhResponse a)
+  = Either String { statusCode :: StatusCode, response :: GhResponse a }
 
 data GhResponse a
   = Ok (DataResponse a)
@@ -71,7 +76,10 @@ parseResult = case _ of
   Left e -> Left $ "http error: " <> printError e
   Right res -> case readJSON res.body of
     Left e -> Left $ "json decode error: " <> show e
-    Right result -> Right result
+    Right result -> Right { statusCode: statusCode res, response: result }
+
+statusCode :: forall a. Response a -> StatusCode
+statusCode response = unwrap response.status
 
 buildRequest :: Query -> Token -> AX.Request String
 buildRequest query token =
