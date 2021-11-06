@@ -56,13 +56,15 @@ router _ _ = HTTPure.notFound
 handleUser :: Config -> String -> HTTPure.ResponseM
 handleUser config userId = do
   result <- User.user userId config.token
-  liftEffect
-    $ case result of
-        Left e -> Console.log e
-        Right r ->
-          Console.log
-            $ case r of
-                Gh.Ok d -> show d
-                Gh.GraphError e -> show e
-                Gh.RequestError e -> show e
-  HTTPure.ok userId
+  handleGhResult result (\u -> HTTPure.ok u.user.avatarUrl)
+
+handleGhResult :: forall a. Either String (Gh.GhResponse a) -> (a -> HTTPure.ResponseM) -> HTTPure.ResponseM
+handleGhResult result handler = case result of
+  Left e -> HTTPure.internalServerError e
+  Right r -> handleGhResponse r handler
+
+handleGhResponse :: forall a. Gh.GhResponse a -> (a -> HTTPure.ResponseM) -> HTTPure.ResponseM
+handleGhResponse response handler = case response of
+  Gh.Ok res -> handler res.data
+  Gh.GraphError res -> HTTPure.badRequest $ "graph error: " <> show res
+  Gh.RequestError res -> HTTPure.badRequest $ "request error: " <> show res
