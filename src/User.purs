@@ -5,10 +5,9 @@ module User
 
 import Prelude
 import Data.Maybe (Maybe)
-import Data.String (Pattern(..), Replacement(..))
-import Data.String (replace, replaceAll) as String
 import Effect.Aff (Aff)
 import Gh as Gh
+import Util as Util
 
 type Response
   = { user ::
@@ -22,13 +21,7 @@ type Response
     }
 
 detail :: String -> Gh.Token -> Aff (Gh.GhResult Response)
-detail userId = Gh.post $ buildQuery userId
-
-buildQuery :: String -> String
-buildQuery userId = String.replace (Pattern "__userId__") (Replacement userId) queryOneLine
-
-queryOneLine :: String
-queryOneLine = String.replaceAll (Pattern "\n") (Replacement " ") query
+detail userId = Gh.post $ Util.formatQuery query [ { marker: "__userId__", value: userId } ]
 
 query :: String
 query =

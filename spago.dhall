@@ -2,6 +2,8 @@
 , dependencies =
   [ "aff"
   , "affjax"
+  , "arrays"
+  , "assert"
   , "console"
   , "control"
   , "dotenv"
