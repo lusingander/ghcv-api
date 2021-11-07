@@ -16,10 +16,12 @@
   , "newtype"
   , "node-process"
   , "nullable"
+  , "ordered-collections"
   , "prelude"
   , "psci-support"
   , "simple-json"
   , "strings"
+  , "tuples"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]
