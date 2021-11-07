@@ -13,6 +13,7 @@
   , "maybe"
   , "newtype"
   , "node-process"
+  , "nullable"
   , "prelude"
   , "psci-support"
   , "simple-json"

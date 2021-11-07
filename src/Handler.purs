@@ -5,14 +5,35 @@ module Handler
 import Prelude
 import Config (Config)
 import Data.Either (Either(..))
+import Data.Nullable (Nullable, toNullable)
 import Gh (GhResponse(..), GhResult, StatusCode) as Gh
 import HTTPure as HTTPure
-import User (user) as User
+import Simple.JSON (writeJSON)
+import User (UserResponse, user) as User
+
+type UserResponse
+  = { login :: String
+    , name :: Nullable String
+    , location :: Nullable String
+    , company :: Nullable String
+    , websiteUrl :: Nullable String
+    , avatarUrl :: String
+    }
+
+toUserResponse :: User.UserResponse -> UserResponse
+toUserResponse res =
+  { login: res.user.login
+  , name: toNullable res.user.name
+  , location: toNullable res.user.location
+  , company: toNullable res.user.company
+  , websiteUrl: toNullable res.user.websiteUrl
+  , avatarUrl: res.user.avatarUrl
+  }
 
 handleUser :: Config -> String -> HTTPure.ResponseM
 handleUser config userId = do
   result <- User.user userId config.token
-  handleGhResult result (\u -> HTTPure.ok u.user.avatarUrl)
+  handleGhResult result $ HTTPure.ok <<< writeJSON <<< toUserResponse
 
 handleGhResult :: forall a. Gh.GhResult a -> (a -> HTTPure.ResponseM) -> HTTPure.ResponseM
 handleGhResult result handler = case result of
