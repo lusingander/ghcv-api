@@ -10,6 +10,7 @@ import Gh (GhResponse(..), GhResult, StatusCode) as Gh
 import HTTPure as HTTPure
 import Simple.JSON (writeJSON)
 import User (Response, detail) as User
+import Util (validGhUserId)
 
 type UserResponse
   = { login :: String
@@ -31,9 +32,11 @@ toUserResponse res =
   }
 
 handleUser :: Config -> String -> HTTPure.ResponseM
-handleUser config userId = do
-  result <- User.detail userId config.token
-  handleGhResult result $ HTTPure.ok <<< writeJSON <<< toUserResponse
+handleUser config userId = case validGhUserId userId of
+  Left e -> HTTPure.badRequest e
+  Right _ -> do
+    result <- User.detail userId config.token
+    handleGhResult result $ HTTPure.ok <<< writeJSON <<< toUserResponse
 
 handleGhResult :: forall a. Gh.GhResult a -> (a -> HTTPure.ResponseM) -> HTTPure.ResponseM
 handleGhResult result handler = case result of

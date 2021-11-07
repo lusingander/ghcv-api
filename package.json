@@ -19,6 +19,7 @@
     "spago": "^0.20.3"
   },
   "dependencies": {
+    "github-username-regex": "^1.0.0",
     "xhr2": "^0.2.1"
   }
 }

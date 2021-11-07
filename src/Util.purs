@@ -1,9 +1,11 @@
 module Util
   ( formatQuery
+  , validGhUserId
   ) where
 
 import Prelude
 import Data.Array (foldl)
+import Data.Either (Either(..))
 import Data.String (Pattern(..), Replacement(..))
 import Data.String (replace, replaceAll) as String
 
@@ -18,3 +20,12 @@ replaceMarker src { marker: marker, value: value } = String.replace (Pattern mar
 
 oneLine :: String -> String
 oneLine = String.replaceAll (Pattern "\n") (Replacement " ")
+
+foreign import userIdTest :: String -> Boolean
+
+validGhUserId :: String -> Either String String
+validGhUserId id =
+  if userIdTest id then
+    Right id
+  else
+    Left "invalid id format"
