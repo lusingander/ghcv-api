@@ -9,7 +9,7 @@ import Data.Nullable (Nullable, toNullable)
 import Gh (GhResponse(..), GhResult, StatusCode) as Gh
 import HTTPure as HTTPure
 import Simple.JSON (writeJSON)
-import User (UserResponse, user) as User
+import User (Response, detail) as User
 
 type UserResponse
   = { login :: String
@@ -20,7 +20,7 @@ type UserResponse
     , avatarUrl :: String
     }
 
-toUserResponse :: User.UserResponse -> UserResponse
+toUserResponse :: User.Response -> UserResponse
 toUserResponse res =
   { login: res.user.login
   , name: toNullable res.user.name
@@ -32,7 +32,7 @@ toUserResponse res =
 
 handleUser :: Config -> String -> HTTPure.ResponseM
 handleUser config userId = do
-  result <- User.user userId config.token
+  result <- User.detail userId config.token
   handleGhResult result $ HTTPure.ok <<< writeJSON <<< toUserResponse
 
 handleGhResult :: forall a. Gh.GhResult a -> (a -> HTTPure.ResponseM) -> HTTPure.ResponseM

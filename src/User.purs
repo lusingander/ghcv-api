@@ -1,6 +1,6 @@
 module User
-  ( user
-  , UserResponse
+  ( detail
+  , Response
   ) where
 
 import Prelude
@@ -10,7 +10,7 @@ import Data.String (replace, replaceAll) as String
 import Effect.Aff (Aff)
 import Gh as Gh
 
-type UserResponse
+type Response
   = { user ::
         { login :: String
         , name :: Maybe String
@@ -21,8 +21,8 @@ type UserResponse
         }
     }
 
-user :: String -> Gh.Token -> Aff (Gh.GhResult UserResponse)
-user userId = Gh.post $ buildQuery userId
+detail :: String -> Gh.Token -> Aff (Gh.GhResult Response)
+detail userId = Gh.post $ buildQuery userId
 
 buildQuery :: String -> String
 buildQuery userId = String.replace (Pattern "__userId__") (Replacement userId) queryOneLine
