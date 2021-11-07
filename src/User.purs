@@ -27,12 +27,12 @@ query :: String
 query =
   """
 query { 
-    user(login: \"__userId__\") {
-        login
-        name
-        location
-        company
-        websiteUrl
-        avatarUrl
-    }
+  user(login: \"__userId__\") {
+    login
+    name
+    location
+    company
+    websiteUrl
+    avatarUrl
+  }
 }"""
