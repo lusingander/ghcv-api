@@ -17,7 +17,7 @@ main =
     liftEffect $ bitraverse startFail startServer config
 
 startServer :: Config -> HTTPure.ServerM
-startServer config = HTTPure.serve 8080 (router config) $ Console.log "Server now up on http://localhost:8080"
+startServer config = HTTPure.serve config.port (router config) $ Console.log $ "Server now up on http://localhost:" <> show config.port
 
 startFail :: String -> Effect Unit
 startFail e = Console.log $ "Failed to start: " <> e

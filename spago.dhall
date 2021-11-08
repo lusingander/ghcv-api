@@ -12,6 +12,7 @@
   , "foldable-traversable"
   , "http-methods"
   , "httpure"
+  , "integers"
   , "maybe"
   , "newtype"
   , "node-process"
