@@ -10,7 +10,8 @@
     "dev": "npx spago run",
     "build": "npx spago build",
     "bundle": "npx spago bundle-app",
-    "test": "npx spago test"
+    "test": "npx spago test",
+    "start": "npm run bundle && node index.js"
   },
   "author": "Kyosuke Fujimoto",
   "license": "MIT",
