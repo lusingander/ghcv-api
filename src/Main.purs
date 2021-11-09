@@ -17,14 +17,27 @@ main =
     liftEffect $ bitraverse startFail startServer config
 
 startServer :: Config -> HTTPure.ServerM
-startServer config = HTTPure.serve config.port (router config) $ Console.log $ "Server now up on http://localhost:" <> show config.port
+startServer config = HTTPure.serve config.port (router config) $ startSuccess config
+
+startSuccess :: Config -> Effect Unit
+startSuccess config = Console.log $ "Server now up on http://localhost:" <> show config.port
 
 startFail :: String -> Effect Unit
 startFail e = Console.log $ "Failed to start: " <> e
 
 router :: Config -> HTTPure.Request -> HTTPure.ResponseM
-router config { method: HTTPure.Get, path: [ "users", userId ] } = handleUser config userId
+router = responseMiddleware <<< router'
 
-router config { method: HTTPure.Get, path: [ "users", userId, "prs" ] } = handleUserPrs config userId
+router' :: Config -> HTTPure.Request -> HTTPure.ResponseM
+router' config { method: HTTPure.Get, path: [ "users", userId ] } = handleUser config userId
 
-router _ _ = HTTPure.notFound
+router' config { method: HTTPure.Get, path: [ "users", userId, "prs" ] } = handleUserPrs config userId
+
+router' _ _ = HTTPure.notFound
+
+responseMiddleware :: (HTTPure.Request -> HTTPure.ResponseM) -> HTTPure.Request -> HTTPure.ResponseM
+responseMiddleware rt req = do
+  response@{ headers } <- rt req
+  pure $ response { headers = header <> headers }
+  where
+  header = HTTPure.header "Access-Control-Allow-Origin" "*" -- fixme
