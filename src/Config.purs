@@ -25,14 +25,19 @@ loadConfig = do
 
 loadConfig' :: Effect (Either String Config)
 loadConfig' = do
+  port <- loadPort
+  token <- loadToken
+  pure $ { port: _, token: _ } <$> port <*> token
+
+loadPort :: Effect (Either String Int)
+loadPort = do
   maybePort <- lookupEnv configKeyPort
+  pure $ Either.note "port is not set" $ Int.fromString =<< maybePort
+
+loadToken :: Effect (Either String String)
+loadToken = do
   maybeToken <- lookupEnv configKeyToken
-  let
-    config = do
-      port <- Either.note "port is not set" $ Int.fromString =<< maybePort
-      token <- Either.note "token is not set" maybeToken
-      pure { port: port, token: token }
-  pure config
+  pure $ Either.note "token is not set" maybeToken
 
 configKeyPort :: String
 configKeyPort = "PORT"
