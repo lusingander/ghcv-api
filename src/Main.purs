@@ -29,6 +29,8 @@ router :: Config -> HTTPure.Request -> HTTPure.ResponseM
 router = responseMiddleware <<< router'
 
 router' :: Config -> HTTPure.Request -> HTTPure.ResponseM
+router' _ { method: HTTPure.Get, path: [] } = HTTPure.ok "ok"
+
 router' config { method: HTTPure.Get, path: [ "users", userId ] } = handleUser config userId
 
 router' config { method: HTTPure.Get, path: [ "users", userId, "prs" ] } = handleUserPrs config userId
